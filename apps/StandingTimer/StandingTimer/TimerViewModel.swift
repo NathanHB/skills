@@ -14,9 +14,10 @@ enum TimerPhase {
     }
 }
 
-class TimerViewModel: ObservableObject {
+@MainActor
+final class TimerViewModel: ObservableObject {
     @Published var phase: TimerPhase = .sitting
-    @Published var remaining: TimeInterval = TimerPhase.sitting.duration
+    @Published private(set) var remaining: TimeInterval = TimerPhase.sitting.duration
 
     private var cancellable: AnyCancellable?
 
@@ -36,11 +37,8 @@ class TimerViewModel: ObservableObject {
     }
 
     private func tick() {
-        if remaining > 0 {
-            remaining -= 1
-        } else {
-            transition()
-        }
+        remaining = max(0, remaining - 1)
+        if remaining == 0 { transition() }
     }
 
     private func transition() {
